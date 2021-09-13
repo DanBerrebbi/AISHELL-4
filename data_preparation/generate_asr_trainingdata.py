@@ -14,7 +14,7 @@ import argparse
 import textgrid
 
 def get_line_context(file_path, line_number):
-    return linecache.getline(file_path, line_number).strip()
+    return linecache.getline(file_path, line_number).strip()    # juste pour acceder à la ligne mentionnée dans le fichier mentionné 
 
 
 def sfread(fname):
@@ -138,42 +138,57 @@ def add_noise(clean, noise, rir, snr):
 
 
 def run(args):
-    wavlist = args.aishell1_wav_list
-    noiselist = args.noise_list
-    rirlist = args.rir_list
     output_dir = args.output_dir
     datamode = args.mode
-
-    output_text = output_dir+'/'+datamode+'/text'
-    output_text = open(output_text, 'w')
-    output_utt2dur = output_dir+'/'+datamode+'/utt2dur'
-    output_utt2dur = open(output_utt2dur, 'w')
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
     if not os.path.exists(output_dir+'/'+datamode+'/wav'):
         os.makedirs(output_dir+'/'+datamode+'/wav')
+    output_text = output_dir+'/'+datamode+'/text'
+    output_text = open(output_text, 'w')
+    output_utt2dur = output_dir+'/'+datamode+'/utt2dur'
+    output_utt2dur = open(output_utt2dur, 'w')
+
+ 
 
 
-    for i in range(0, len(open(wavlist,'r').readlines())):
-        random.seed(time.clock())
-        wavidx = i #random.randint(0, len(open(wavlist,'r').readlines())-1)
-        noiseidx = random.randint(0, len(open(noiselist,'r').readlines())-1)
-        riridx = random.randint(0, len(open(rirlist,'r').readlines())-1)
-        wav_path = get_line_context(wavlist, wavidx+1)
-        noise_path = get_line_context(noiselist, noiseidx+1)
-        rir_path = get_line_context(rirlist, riridx+1)
-        random.seed(time.clock())
-        snr = random.uniform(5, 20)
-        outname = wav_path.split('/')[-1]
-        outname = outname.split('.wav')[0]
-        out, spk1, spk2 = mixwav(wav_path, noise_path, rir_path, snr)
-        sf.write(output_dir+'/'+datamode+'/wav/'+outname+'_noisy.wav', out[:,0], 16000)
-        text = get_line_context(args.text, wavidx+1)
-        text = text.split(' ')[1]
-        output_text.write(outname+'_noisy '+text+'\n')
-        output_utt2dur.write(outname+'_noisy '+str(out[:,0].shape[0]/16000)+'\n')
-        output_text.flush()
-        output_utt2dur.flush()
+    if 6 == 7 : # j'essaye de skip ca 
+        wavlist = args.aishell1_wav_list
+        noiselist = args.noise_list
+        rirlist = args.rir_list
+        output_dir = args.output_dir
+        datamode = args.mode
+
+        output_text = output_dir+'/'+datamode+'/text'
+        output_text = open(output_text, 'w')
+        output_utt2dur = output_dir+'/'+datamode+'/utt2dur'
+        output_utt2dur = open(output_utt2dur, 'w')
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+        if not os.path.exists(output_dir+'/'+datamode+'/wav'):
+            os.makedirs(output_dir+'/'+datamode+'/wav')
+
+
+        for i in range(0, len(open(wavlist,'r').readlines())):
+            random.seed(time.clock())
+            wavidx = i #random.randint(0, len(open(wavlist,'r').readlines())-1)
+            noiseidx = random.randint(0, len(open(noiselist,'r').readlines())-1)
+            riridx = random.randint(0, len(open(rirlist,'r').readlines())-1)
+            wav_path = get_line_context(wavlist, wavidx+1)
+            noise_path = get_line_context(noiselist, noiseidx+1)
+            rir_path = get_line_context(rirlist, riridx+1)
+            random.seed(time.clock())
+            snr = random.uniform(5, 20)
+            outname = wav_path.split('/')[-1]
+            outname = outname.split('.wav')[0]
+            out, spk1, spk2 = mixwav(wav_path, noise_path, rir_path, snr)
+            sf.write(output_dir+'/'+datamode+'/wav/'+outname+'_noisy.wav', out[:,0], 16000)
+            text = get_line_context(args.text, wavidx+1)
+            text = text.split(' ')[1]
+            output_text.write(outname+'_noisy '+text+'\n')
+            output_utt2dur.write(outname+'_noisy '+str(out[:,0].shape[0]/16000)+'\n')
+            output_text.flush()
+            output_utt2dur.flush()
 
     if args.mode == 'train':
         wav_list = args.aishell4_wav_list
@@ -181,7 +196,9 @@ def run(args):
         for textgrid_num in range(len(open(textgrid_list,'r').readlines())):
             grid = get_line_context(textgrid_list, textgrid_num + 1) 
             tgridobj = textgrid.TextGrid()
+            #assert 6==2
             tgridobj.read(grid)
+            #assert 6==0
             n_spk = len(tgridobj)
             conferencetime = tgridobj.maxTime
             conferencetime = float(conferencetime)
@@ -231,6 +248,7 @@ def run(args):
             wavpath = get_line_context(wav_list, textgrid_num + 1)
             wavid = wavpath.split('/')[-1]
             wavid = wavid.split('.wav')[0]
+            wavid = wavid.split('.flac')[0]
             y, fs = sf.read(wavpath)
             spkid_index = 0
             for i in range(len(positionstart)):
@@ -246,6 +264,10 @@ def run(args):
                     output_text.flush()
                     output_utt2dur.flush()
                     spkid_index = spkid_index + 1
+
+
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
